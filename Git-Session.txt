@@ -1,0 +1,350 @@
+Git
+---------------
+Source control managemnt 
+Version Control Management tools
+----------------
+2 different type architechture
+** Centralized : 
+- you cant save the data in your local system repository.
+- need to be connected with local system to centralized source control
+- 
+** Decentralized
+- Local Repository 
+- file & directory can be keep in local system repo
+- than it can be sync to centralized source control
+- 
+---------------------
+why git?
+- dectralized version control system
+- open source
+- most of all the operaiton are local inventory
+- comparitively much fast
+- active community support
+-----------------------
+installing git
+** git from defalut repository comes with OS
+** download the required GIT version,  resolve all the dependencies manually ans then insall git
+------------------------
+git has been eveloped from the combination of C, Perl and shell script
+
+$yum group install "development Tools"
+$yum install gettext-devel openssl-devel perl-CPAN perl-devel zlib-devel curl-devel
+$wget https://github.com/git/git/archive/v2.10.1.tar.gz
+$tar -xzf v2.10.1.tar.gz
+go to deirectory
+$make configure
+$./configure --prefix=/usr/local
+$make install
+
+-----------------------------------
+
+*** git states ***
+1. un-tracked  //git not have any recod for any changes to teh file or directory. 
+to aware git the chnage in file $git add abc1.txt
+#git add
+#git reset  //again file state chnage from stagged to untracked
+#git reset filename
+
+2. staged ! tracked  //still not in local repository
+#git commmit
+
+3. commited  // file in only sytaged state can be commietd. file is underl git control ans save in locl repository.  $git commit filename
+Note: all above operaiton are heppenig in local syatem not in git server. 
+
+
+#git push
+
+4. Centralized
+file need to be push only in commited state. 
+#git push filename
+
+
+----------------------------------
+
+./configue 
+
+cloneing: download github repo files into your local system
+git clone <paste the path here>
+
+$git status // show you the list of file has been chnage or new file in the local bracng
+-----------------------------------
+git new repository
+-------------------------------
+
+$git init fresh-project
+// a new directory created with git contorl localy//
+. .. .git 
+// if any directory containt .git directory it means it under git ocntorl //
+
+$git status
+if delte the .git directory the directory is no more with git control
+
+vim hipster.txt
+$git status
+
+untracked files
+git add hipster.txt
+
+mkdir web-project
+mv /root/initializer /projects/web-projetcs
+
+git init
+its take autometclly cuurent working directory and takes control under git
+
+git add .  // .takes everything under the directory to staging ares
+
+git commit -m "addling all file""
+
+---------------------------------
+using fork option to copy git repo in to your repo in github
+git clone https://qjwdnqkjdoqnflkfnoqwnfpo
+
+git commit -am "this is 2nd commit"
+git ls-files // tells you which files are under git or not
+
+// adding recuursively add files to git
+
+create multiple directrocty with multiple files into it
+level1/level2/level3
+ git status
+ new untracked 
+
+git add .
+// its add to staging reccursively under git control
+
+to backout the chnages from the direcory
+git reset HEAD <file name>
+
+move file to 1 step back in under git as untracked files
+
+git checkout -- <filename>
+// remove the last updated the data from the file. //
+
+git add -A
+//if any renaming happen from linux command its add to staging
+
+-------------------
+10/06/2020
+-----------------
+git mv level2.txt 2.txt
+note: if you using "git mv" it autometiclly add to stagging no need to stage manuallay later. however if you normal linux MV commnad its take a new change uner git. 
+
+1. Renaming a file 
+2. moving files
+using git MV or linux MV
+
+git mv 2.txt level2.txt
+git status
+-------------------------------
+vim doomed
+git statua
+note: a git coomand will be work if only the file/direcltuy are under git control
+
+$git ls-files  //show all the file uunder git contorl
+
+delte a file which is on git contorl. 
+
+--------------------------
+file backout
+git reset HEAD hipset.txt  // unstage the deletion
+
+git checkout --hipter.txt
+
+-----------------------
+file backout linux command
+$rm hipster.txt
+$git ls-files
+$git status
+$git add -A 
+the file will be back to directlity. 
+
+once you delete the file frompwd its deleted, when you stage again in git it will be restore from the local repository. 
+----------------------------
+
+History
+--------
+git history, a meta data of complete file . 
+
+$git Log
+//display commit history in reverse oerder. 
+
+$git Log --abbrev-commit
+$git Log --oneline --graph --decorate
+
+listing the commit history
+$git Log --since="2 days"
+
+commit history for particylar file
+$git Log --hipster.txt
+$git Log --follow -- hipstr.txt
+
+$git show <commit_ID>
+detailed info about particular commit
+
+$git help log //help page 
+
+--------------------------------------
+git alias
+---------
+$git config --global alias.hist "log --graph --decorate --oneline"
+
+this command will create hist alias for command ($git Log --oneline --graph --decorate )
+
+--------------------------------------
+git should not be tracked my one of files 
+
+$vim .gitignore 
+//update the files into it
+this also need to be added and commiuted 
+
+-----------------------------
+Difference and merge Operation with 3rd party tool
+--------
+3rd party tool helix--
+www.preforce
+search p4merge
+and download helix-p4merge
+
+-------------------------
+
+$git config --global diff.tool p4merge
+git config --global difftool.p4merge.path /usr/local/bin/p4merge
+
+$git config --global difftool.promt flase
+
+$git config --global merge.tool p4merge
+$git config --global mergetool.p4merge.path /usr/local/bin/p4merge
+
+$git config --global mergetool.promt flase
+
+$git config --global --list  //show all confifg infomraton
+
+----------------------------
+11/06/2020
+---------------
+difference between current working direcotory area and commit area
+
+{{git diff // difference between PWD and Stagging area}}
+
+{{git diff HEAD // difference between PWD and commit area}}
+
+difference between staged and commit area
+git difftoll --staged HEAD
+git difftoll --chached HEAD
+
+git difftoll --staged HEAD
+git difftoll --chached HEAD
+
+*****differebce between multiple arbitart commit and Head
+HEAD : last commit
+HEAD-1 : last to last commit 
+
+*****differebce between Head and HEAD-1
+
+-----------
+12/06/2020
+-----------
+1. difference btween
+* 2 arbitary commnts  // Arbitary ID are commit IDs//
+* Head and Head-1 
+* local repository and Remote repository
+
+
+
+$git log --online
+//recent commits
+
+$git diff d93d2ef 41b19790
+//differnce betwwen 2 arbitary commits/
+
+
+$git diff d93d2ef HEAD 
+//differnce betwwen 2 arbitary commits/
+HEAD is latest commits
+
+$git diff HEAD^ HEAD
+$git diff HEAD~1 HEAD
+ //Same as above//
+
+$git commit -am "added entites"
+
+difference local repository and Remote repository
+----
+git remote -v //show if any remote cnnection available. 
+
+git remote add origin https://Github.com
+
+git remote -v
+
+git push origin master
+
+git diff master origin/master
+//show diff betwwen github and localrepo master//
+-------------------------------
+git Branching 
+--------
+Branch is newway to request new working directory stagingn area and project history
+
+New commits are recoreded in the history for the current branch
+
+git branch demobranch 
+//from pwd same branch will be created. 
+
+
+
+git checkout demobranch
+git checkout master
+//switch to the branch
+
+
+git branch //show the current branch 
+git branch -a // show all the branchs including local and origin master //
+
+git branch -d small-feature
+
+git branch -D <branchnme> delete the branch
+
+git checkout -b new-branch-1 master
+//branch created and moved to branch 
+
+git checkout -b new-branch2 new-branch-1
+nested branch
+
+----
+firstforward merge
+-----
+git merge new-branch-2
+
+git checkout master
+git diff master new-branch-2
+git merge new-branch-2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
