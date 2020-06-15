@@ -1,9 +1,0 @@
-hello world from ansible and aws could servers
-<<<<<<< HEAD
-
-i am from teh bright talsk
-=======
-hi i am from devil aws
-how are you
-i am too goood
->>>>>>> 9dafe4df301101047aad2bb75c94d348953e45ea
