@@ -1,0 +1,639 @@
+https://global.gotomeeting.com/join/278037205
+
+devopd
+Ansible:
+ansible.cfg -> go to inventory and yiou can chnage the location. 
+
+* ansible all ping -m
+create a user and try test all the host 
+
+----------------------------
+dedicated ansible.cfg file for each user in master machine
+user with sudo access
+create a dir 
+cp -r /etc/ansible/* /home/admin2
+note:; all the ansible command for user to run from this directory for dedicated config file.
+
+
+add entry in ansible.cfg to inventory location file for user
+
+--------------------------------
+
+to use one time cusotom inventory file than
+ansible -i db_server all -m ping : for temporary invenroty exec
+
+-----------------------------------
+to disable the hostkey authentication: to ansible engilef
+sudo export ANSIBLE_HOST_KEY_CHECKING=False
+anisible.cfg:NSIBLE_HOST_KEY_CHECKING=False 
+------------------------------------------
+
+
+Inventory file with groups and Grups of groups
+groups to be done for all segregated with hosts. 
+
+$vi myhosts
+[web_server]
+10.0.1.80
+10.0.1.81
+10.0.1.82
+10.0.1.83
+
+[db_server]
+10.0.1.84
+10.0.1.85
+10.0.1.86
+10.0.1.87
+
+$ansible  IP:ip:ip:ip instead of this ->
+
+$ansible web-server -m ping
+$ansible db-server -m ping
+
+
+Nested groups
+
+*** Multiple group can be use in adhoc command as below
+ansible web:db:xx:cc -m ping 
+
+--------------
+
+Ansadmin: 
+config.file location
+1. etc/ansible/ansible,cfg
+2. muydir/ansible.cfg
+3. 
+
+priority as follow
+1. ansible_config environment variable
+2. ./ansible.cfg (under current wokring direcotry)
+3. ~/.ansible.cfg (file in yoru home directory)
+4. /etc/ansible/ansible.cfg
+
+-------------------------------
+2 way to manage nodes
+1. adhoc command
+2. Playbook
+
+Play: collection of task
+playbook: collection of plays 
+
+-------------------------
+ansible.cfg-> forks value to make the ansible angine to run ansible command in managenodes paralaly based on the no of nodes mentioned here. 
+
+#!bin/bash
+sudo yum update
+sudo yum install python3
+sudo amazon-linux-extras install ansible2
+---------------------------------------------------------
+
+26/05/2020
+---------------------
+1. copy a file from ansible engine to host machines. 
+2. 
+#ansible all -m ping
+#ansible db -m copy -a "src=dummy.txt dest=/tmp"
+#ansible db -m copy -a "src=dummy.txt dest=/tmp/file12 (it copy the file with new namee file12
+
+note: if we re excecute the same command it may not perfome the task but task has been successed. 
+however if the same file has been updated and if you run this command it will perfoome the task and successed. 
+
+idompotent: Above one 
+
+//content based copy file data. 
+#ansible db -m copy -a "content="hello from ansible' dest=/tmp/filename
+
+#ansible db -m copy -a "content="today we have a lot of maintennce db server dest=/tmp/filename
+note: overwrite this to dest file 
+
+* to take back back of old data 
+#ansible db -m copy -a "content="today we have a lot of maintennce db server dest=/tmp/filename backup=yes"
+
+#ansible db -m copy -a "content=" this is test dat dest=/home/jony/filename" 
+
+-------------------
+import file Fetch=module
+
+ansible 192.168.2.3 -m fetch - a "src=/home/ansadmin/demo.txt dest=/home/ansadmin/demotxt"
+its copied as treee structure ls -R
+
+without tree structure
+ansible 192.168.2.3 -m fetch - a "src=/home/ansadmin/demo.txt dest=/home/ansadmin/demotxt flat=yes" 
+
+Note: only file will be copied not tree struc 
+
+copy the file from nodes but with informaiton of severip or hostname
+ansible 192.168.2.5 -m fetch -a "src=home.ansible/demo.txt dest=/home/ansible/demo/{{inventory_hostname}}_filename.txt flat=yes" 
+
+file will be creted as 192.168.2.4_filename.txt
+---------------
+
+#ansible 192.168.2.5 -m setup
+import default variables 
+------------------------------------------------
+Create file 
+#ansible db -m file -a "path=/home/ansadmin/demo1.txt state=touch"
+
+create file with permission
+#ansible db -m file -a "path=/home/ansadmin/demo1.txt state=touch mode='077'"
+
+delte the file
+#ansible db -m file -a "path=/home/ansadmin/demo1.txt state=absent"
+ 
+-----------------------
+create directorty
+#ansible db -m file -a "path=/home/ansadmin/demo1.txt state=directory"
+
+
+#ansible db -m file -a "path=/etc/ansadmin/demo1.txt state=directory" -b
+Note: -b/ -become  is consider as sudo attributes
+
+--------------------------------
+yum moduel 
+
+#ansible db -m yum -a "name=git state=present/latest" 
+not work: need a root privladge
+
+#ansible db -m yum -a "name=git state=present/latest" --become/-b
+
+Either use be present/latest
+
+**uninstalling git
+#ansible db -m yum -a "name=git state=removed" --become/-b
+
+**yum & apt update
+#ansible db:web -m apt -a "update_cache=yes"
+-------------------------------------
+
+******Ansible Facts*******
+the process of gathering of info from manages nodes is called facts (client information)
+
+1. Default Facts---- #ansible 192.168.2.5 -m setup
+2. Custom Facts----#ansible 192.168.2.5 -m shell -a "/usr/sbin/httpd --version
+ex:  if you need any git, httpd version thats custm facts
+
+------------------------------------
+27/05/2020
+------------------------------------
+Playbooks: 
+playbook is cpllection of plays and use YML code with ".yml" extension
+
+#cd /etc/ansible
+#vim asnsible.cfg
+Inventory: hosts
+remote_user: ansadmin(any user)
+ask_pass = false
+
+[privilage_escalation]
+become = true
+become_method = Sudo
+become_user = root
+become_ask_pass= false
+
+** Creating user with ansible command 
+#ansible db:web -m user -a "name=newuser uid=5001 state=present" -b
+
+Playbook: 
+
+vim Sampleplay.yml
+---
+- name : this paly is to create new user. 
+  hosts : db
+  become : true
+  task : 
+   - name : this task is to create user account
+     user : 
+       name : mice
+       uid : 5010
+       state : present
+:wq!
+
+**to check the syntax error
+#ansibel-playbook --syntax-check sampleplay.yml
+
+** dryrun: run and checkand test the playbook its doesnot perfome the task
+ansibel-playbook -C sampleplay.yml
+
+vim Samplaybook2
+---
+ - name : starting NTP service & postfix service
+   host : db
+   become : true
+   tasks : 
+    - name : this task is to enable start &enable ntp service
+      service : 
+        name : chronyd
+        state : started
+        enabled : true
+    - name : this task is to start and enable postfix service
+      service : 
+        name : postfix
+        state : started
+        enabled : true
+----------------
+28/05/2020
+---------------------
+
+Variable: to manage dynamic values in our ansible environment. 
+-> letters, Number and underscore
+* global scope : defining var in commandline or ansible configuratuon. 
+* Play scope : inside playbvook
+* host scope : inventory file
+  * Host var : Inventory var that applay directky to specific host.
+  Ex: 
+  #vim hosts
+  [server]
+  192.168.2.9
+  192.168.2.9
+
+  192.168.2.9  
+  192.168.2.9
+  192.168.2.9
+
+
+  * Group var : 
+  #vim hosts
+  [server]
+  192.168.2.9
+  192.168.2.9
+  
+  [server:var]
+  user=karan
+
+Note: Priority od variable
+* global scope  1st 
+* Play scope    2nd
+* host scope  3rd
+
+---------------------
+loops: perform the repeated task usinf same module
+
+----------------------------------
+30/05/2020
+----------------------------------
+Ansbile Valut:  encruypt the file. 
+Command: ansible-vault
+
+$ansible-vault create jony.yml
+$vim target
+redhat
+
+$ansible-vault create --vault-password-file=target secrent.yml
+thid is the 2nd file crated usibg by vault
+
+ansible-vault view scrret.yml
+
+ansible-vault edit secrent.yml
+
+convet exisitg file to encrypt filre
+ansible-vault encryt a1 a2
+enter the password
+
+decrypt: 
+ansible-vault decrypt a1
+enter passwod
+
+$ansible-vault create secrect1.yml
+this is just for test file in content
+
+
+$ansible-vault create secrect1.yml --output=secrept2.yml
+note: the original file will not decypt.
+
+to change the ancypted file password
+$ansible-vault rekey secrect1.yml
+
+$ansible-vault rekey secrect1.yml --new-valut-password-file=target secrect1.yml
+
+$ansible-playbook --vault-id @promt seceret5.yml
+this will promt password to run 
+
+$ansible-vau secrect1.yml
+
+------------------------------------
+Handlers: when we run playbook sometime services has been restarted even if there no chnages due to idempotent. so not to restart the services we use handler. 
+
+#vim handler.yml
+
+---
+ - name : configuring http with handlers
+   hosts : web
+   become : true
+   tasks :
+    - name : task to installl httpd pkg
+      yum :
+       name : httpd
+       state : latest
+      notify : restart httpd
+    - name : defineing index filehand
+      copy
+        content : " this to update handle index file"
+        dest : /var/www/html/index.html
+    handlers : 
+    - name : restart httpd
+      service : 
+       name : httpd
+       state : resta
+       enabled : trueh
+-----------------------
+edit the any confing files do teist if the handler 
+worlking properly or not.
+
+-----------------------
+1/june-2020
+---------------------
+Reusing ansbile code using including & importing files
+
+1) include content
+2) import content
+
+vim play.yml
+---
+ - name : simple play to install mutltiple pkges
+   hosts : web
+   gather_facts : true
+   become : true
+   tasks : 
+    - name : installing webserver on Redhat Family
+      yum : 
+       name : httpd
+       state : latest
+      ignore_errors : true  //if this task fail still play will be continue
+      when : ansbile_os_family=="RedHat"  
+    - name : installing webserver on Debian Family
+      apt : 
+       name : apache2
+       state : latest
+      ignore_errors : true
+      when : ansbile_os_family=="Debian"
+    - name : Installing Java on Redhat Family
+      yum : 
+       name : java
+       state : latest
+      ignore_errors : true: 
+      when : ansible_os_familuy=="Redhat"
+    - name : Installing Java on Debian Family
+      apt : 
+       name : open.jdk-8-jdk
+       state : latest
+      ignore_errors : true
+      when : ansible_os_familuy=="Debian"
+
+// Copy same file with 5 file 
+
+play1.yml
+---
+ - name : installing webserver on Redhat Family
+      yum : 
+       name : httpd
+       state : latest
+      ignore_errors : true
+---------------------------
+play2.yml
+
+---
+- name : installing webserver on Debian Family
+      apt : 
+       name : apache2
+       state : latest
+      ignore_errors : true
+
+
+-----------------------------
+play3.yml
+---
+- name : Installing Java on Redhat Family
+      yum : 
+       name : java
+       state : latest
+      ignore_errors : true
+----------------------------
+play4.yml
+---
+- name : Installing Java on Debian Family
+      apt : 
+       name : open.jdk-8-jdk
+       state : latest
+      ignore_errors : true
+      
+------------------------
+Next step
+vim play.yml
+---
+ - name : simple play to install mutltiple pkges
+   hosts : web
+   gather_facts : true
+   become : true
+   tasks : 
+    - import_tasks : play1.yml
+      when : ansbile_os_family=="RedHat"
+    - import_tasks : play2.yml
+    - import_tasks : play3.yml
+    - import_tasks : play4.yml
+      
+---------------------
+02/06/2020
+-------------
+Roles : roles means predefined structure which can be used to configure an application. 
+
+$ansible-galaxy init apache --offline
+apache roles has been created at roled directory
+
+1. defaults: it containt default variable informaiton. 
+2. Files: its containt static files inofmratiomn, files which will be copied to remote manage nodes
+3. handlers: task which are based on action, triggers.
+4. meta: containt informaitona about author of the role, platform to be installed, suppoerted platform, Org info
+5. tasks: the core logic or the code use for installling configuring coping files, etc. store in this directory. 
+6. templates: it containt the dynamic files develoed from JINJA2 template. 
+7. vars: this also containt varibale informaiton. 
+
+
+Note: variable can be defined on both Vars & defaults, however variable under VARS will hahev highedt priority. 
+
+
+-----------------------------
+tasks
+vim main.yml
+---
+ - include : install.yml
+ - include : configure.yml
+ - service : service.yml
+
+vim install.yml
+--- 
+ - name : installing apache packege
+   yum : 
+    name : httpd
+    state : latest
+
+
+vim configure.yml
+---define
+ - name : defining httpd.conf file
+   copy : src=httpd.conf dest=/etc/httpd/conf/httpd.conf
+   notify : restart apache service
+ - name : defineing index.html file
+   copy : src=index.html dest=/var/www/html/index.html
+   notify : restart apache service
+
+vim service.yml
+---
+ - name : starting httpd services
+   service : 
+    name : httpd
+    state : started
+
+-----------------------------------------------
+cd files
+cp /etc/httpd/conf/httpd.conf
+vim index.html
+this is the test server file 
+--------------------------------
+cd handlers
+vim main.yml
+--- 
+ - name : resstart apache service
+   service : 
+    name : httpd
+    state : started
+
+-------------------------
+cd meta
+vim main.yml
+------------------
+cd etc/ansible/
+vim sample.yml
+---
+ - hosts : web
+   roles : 
+    - apache
+---------------------------
+
+install mysql databse by ansible
+install enginex
+install postgreesql
+how to create logical volueme 
+partition
+---------------------------------
+
+---
+ - name : configuring YUM repository
+   hosts : web
+   tasks : 
+    - name : configuring local repository for YUM
+      yum_repository : 
+       file : example
+       name : exaplme_ inetranal
+       description : local test repository
+       baseurl : file:///rhelimage
+       enabled : true
+       gpgcheck : true
+    - name : setting up local packege inside rhelimage directory
+      copy : src=/packeges dest=/rhelimage
+-------------------------------------
+
+create particiton
+vim parted.yml
+---
+ - name : creating partition usring parted module
+   hosts : web
+   tasks : 
+    - name : cresting partition
+      parted : 
+       device : /dev/xda
+       number : 1
+    state : present
+    part_end : 5G
+
+--------------------------
+
+vim bg.yml
+---
+ - name : creating VG
+   hosts : web
+   tasks :
+    - name : VG creation
+      lvg : 
+       vg : myvg
+       pvs : /dev/sdb1
+       pesize : 32
+--------------------------
+vim bg.yml
+---
+ - name : creating VG
+   hosts : web
+   tasks :
+    - name : VG creation
+      lvg : 
+       vg : myvg
+       pvs : /dev/sdb1
+       pesize : 32
+    - name : extending VG 
+      lvg : 
+       vg : vg1
+       pvs : /dev/sdb2, /dev/sdb3
+-----------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
